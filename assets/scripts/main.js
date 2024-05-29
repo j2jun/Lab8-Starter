@@ -53,6 +53,19 @@ function initializeServiceWorker() {
   //            log that it was successful.
   // B5. TODO - In the event that the service worker registration fails, console
   //            log that it has failed.
+  if("serviceWorker" in navigator){
+    addEventListener("load", async () => {
+      try {
+        const registration = await navigator.serviceWorker.register("./sw.js", {
+        });
+        if(registration.active) {
+          console.log("Service worker active");
+        }
+      } catch (error) {
+        console.error('Registration failed with ${error}');
+      }
+    })
+  }
   // STEPS B6 ONWARDS WILL BE IN /sw.js
 }
 
@@ -68,6 +81,11 @@ async function getRecipes() {
   // EXPOSE - START (All expose numbers start with A)
   // A1. TODO - Check local storage to see if there are any recipes.
   //            If there are recipes, return them.
+  let recipes = localStorage.getItem("recipes");
+  if (recipes != null) {
+    return eval(recipes);
+  }
+
   /**************************/
   // The rest of this method will be concerned with requesting the recipes
   // from the network
@@ -77,6 +95,7 @@ async function getRecipes() {
   //            function (we call these callback functions). That function will
   //            take two parameters - resolve, and reject. These are functions
   //            you can call to either resolve the Promise or Reject it.
+  let newRecipes = [];
   /**************************/
   // A4-A11 will all be *inside* the callback function we passed to the Promise
   // we're returning
@@ -99,8 +118,34 @@ async function getRecipes() {
   //            we have provided. Then, pass the recipes array to the Promise's
   //            resolve() method.
   // A10. TODO - Log any errors from catch using console.error
-  // A11. TODO - Pass any errors to the Promise's reject() function
+  
+  return new Promise(async (resolve, reject) => {
+    try {
+      for (let url of RECIPE_URLS) {
+        try {
+          let response = await fetch(url);
+          let recipe = await response.json();
+          newRecipes.push(recipe);
+        } 
+        catch (error) { 
+          console.error(error);
+        }
+      }
+      if (newRecipes.length == RECIPE_URLS.length) {
+        localStorage.setItem("recipes", JSON.stringify(newRecipes))
+        resolve(newRecipes);
+      } 
+      else {
+        reject("There are errors on fetching")
+      }
+    } 
+    catch (error) {
+      console.error(error)
+      reject(error);
+    }
+  })
 }
+
 
 /**
  * Takes in an array of recipes, converts it to a string, and then
