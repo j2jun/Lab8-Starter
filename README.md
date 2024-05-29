@@ -6,7 +6,7 @@
 
 ## Github Pages URL
 
-[CSE 110 SP24 - Lab 8](https://j2jun.github.io/lab8-starter/)
+[CSE 110 SP24 - Lab 8](https://j2jun.github.io/Lab8-Starter/)
 
 ## How are graceful degradation and service workers related?
 
